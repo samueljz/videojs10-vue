@@ -7,6 +7,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 // SPA build — no lib mode, no dts generation
 // https://vite.dev/config/
 export default defineConfig({
+  base: "/videojs10-vue",
   plugins: [
     vue(),
     vueDevTools(),
