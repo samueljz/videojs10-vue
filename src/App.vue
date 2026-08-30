@@ -44,7 +44,7 @@
     <div class="sidebar-footer">
       <div class="sidebar-footer__row">
         <span class="sidebar-footer__label">@videojs/html</span>
-        <span class="badge badge--primary">10.0.0-beta.26</span>
+        <span class="badge badge--primary">10.0.0-beta.32</span>
       </div>
       <div class="sidebar-footer__row sidebar-footer__row--muted">Vue 3 + Vite</div>
     </div>

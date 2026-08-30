@@ -2,8 +2,10 @@
  * useVideoPlayer — Vue 3 composable wrapping Video.js 10 (@videojs/html)
  *
  * Architecture:
- * - Uses the `create()` store factory from createPlayer() for imperative access
- * - Attaches store to a <video> element via store.attach(videoEl)
+ * - Reads the store off a <video-player> custom element (registered via the
+ *   `@videojs/html/video/player` side-effect import below)
+ * - The element auto-attaches its store to a nested <video> descendant, and
+ *   auto-destroys the store when removed from the DOM — no manual attach/detach
  * - Bridges the v10 Media Store into Vue refs via store.subscribe() / DOM events
  *
  * @see https://videojs.org/docs/framework/html
@@ -11,11 +13,9 @@
 
 import { ref, shallowRef, readonly, onMounted, onBeforeUnmount, watch, toValue } from 'vue'
 import type { Ref } from 'vue'
-import { createPlayer, selectPlayback, selectTime, selectVolume, selectFullscreen } from '@videojs/html'
-import { videoFeatures } from '@videojs/html/video'
-
-// Shared player factory — one factory per feature set, N instances via create()
-const { create } = createPlayer({ features: videoFeatures })
+import { selectPlayback, selectTime, selectVolume, selectFullscreen } from '@videojs/html'
+import type { VideoPlayerElement } from '@videojs/html/video'
+import '@videojs/html/video/player'
 
 export interface VideoPlayerOptions {
   src?: string | Ref<string>;
@@ -27,15 +27,20 @@ export interface VideoPlayerOptions {
 }
 
 /**
- * Creates a Video.js 10 player bound to a <video> element ref.
+ * Creates a Video.js 10 player bound to a <video> element ref, sourcing its
+ * store from an enclosing <video-player> custom element ref.
  *
  * @param videoRef - Ref pointing to the <video> element
+ * @param playerRef - Ref pointing to the enclosing <video-player> element
  * @param options - Player configuration options
  */
-export function useVideoPlayer(videoRef: Ref<HTMLVideoElement | null>, options: VideoPlayerOptions = {}) {
+export function useVideoPlayer(
+  videoRef: Ref<HTMLVideoElement | null>,
+  playerRef: Ref<VideoPlayerElement | null>,
+  options: VideoPlayerOptions = {}
+) {
   // ── Internal store instance (non-reactive, mutable) ────────────────────────
   let _store: any = null
-  let _detach: (() => void) | null = null
   let _abortCtrl: (AbortController & { _storeUnsub?: () => void }) | null = null
 
   // ── Ready state ────────────────────────────────────────────────────────────
@@ -85,13 +90,12 @@ export function useVideoPlayer(videoRef: Ref<HTMLVideoElement | null>, options: 
   // ── Mount ──────────────────────────────────────────────────────────────────
   onMounted(() => {
     const videoEl = toValue(videoRef)
-    if (!videoEl) return
+    const playerEl = toValue(playerRef)
+    if (!videoEl || !playerEl) return
 
-    // Create store instance
-    _store = create()
-
-    // Attach store to native <video> element — this is the v10 media bridge
-    _detach = _store.attach(videoEl)
+    // Store lives on the <video-player> element; it auto-attaches to the
+    // nested <video> descendant and auto-destroys on disconnect.
+    _store = playerEl.store
 
     // Configure video element from options
     const srcVal = toValue(options.src)
@@ -167,12 +171,11 @@ export function useVideoPlayer(videoRef: Ref<HTMLVideoElement | null>, options: 
 
   // ── Unmount ────────────────────────────────────────────────────────────────
   onBeforeUnmount(() => {
+    // The <video-player> element owns attach/detach and destroys its store
+    // automatically once removed from the DOM — we only unsubscribe here.
     _abortCtrl?._storeUnsub?.()
     _abortCtrl?.abort()
-    _detach?.()
-    _store?.destroy?.()
     _store = null
-    _detach = null
     _abortCtrl = null
     isReady.value = false
   })

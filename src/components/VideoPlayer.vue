@@ -7,12 +7,14 @@
       { 'video-player--fullscreen': isFullscreen }
     ]"
   >
-    <video
-      ref="videoEl"
-      class="video-player__video"
-      playsinline
-      :poster="poster"
-    />
+    <video-player ref="player" class="video-player__stage">
+      <video
+        ref="videoEl"
+        class="video-player__video"
+        playsinline
+        :poster="poster"
+      />
+    </video-player>
 
     <!-- Loading overlay -->
     <transition name="fade">
@@ -52,7 +54,13 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
+import type { VideoPlayerElement } from '@videojs/html/video'
 import { useVideoPlayer } from '../composables/useVideoPlayer'
+
+// Explicit name to avoid colliding with the `<video-player>` custom element
+// used in this template — Vue's SFC compiler otherwise infers "VideoPlayer"
+// from the filename and resolves that tag as a recursive self-reference.
+defineOptions({ name: 'VjsVideoPlayer' })
 
 export interface Props {
   src: string;
@@ -87,6 +95,7 @@ const emit = defineEmits<{
 // ── Template refs ─────────────────────────────────────────────────────────
 const videoEl = ref<HTMLVideoElement | null>(null)
 const container = ref<HTMLElement | null>(null)
+const player = ref<VideoPlayerElement | null>(null)
 
 // ── Composable ────────────────────────────────────────────────────────────
 const {
@@ -110,7 +119,7 @@ const {
   toggleFullscreen,
   requestFullscreen,
   exitFullscreen,
-} = useVideoPlayer(videoEl, {
+} = useVideoPlayer(videoEl, player, {
   src:      props.src,
   poster:   props.poster,
   autoplay: props.autoplay,
@@ -179,6 +188,12 @@ defineExpose({
 
 .video-player--fullscreen {
   border-radius: 0;
+}
+
+.video-player__stage {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .video-player__video {
