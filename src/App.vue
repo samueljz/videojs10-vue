@@ -17,7 +17,7 @@
       <div>
         <div class="sidebar-brand__name">VideoPlayer</div>
         <div class="sidebar-brand__version">
-          <span class="badge badge--accent">v10 beta</span>
+          <span class="badge badge--accent">v10</span>
         </div>
       </div>
     </div>
@@ -44,7 +44,7 @@
     <div class="sidebar-footer">
       <div class="sidebar-footer__row">
         <span class="sidebar-footer__label">@videojs/html</span>
-        <span class="badge badge--primary">10.0.0-beta.32</span>
+        <span class="badge badge--primary">10.0.1</span>
       </div>
       <div class="sidebar-footer__row sidebar-footer__row--muted">Vue 3 + Vite</div>
     </div>
@@ -63,7 +63,7 @@
         <span class="text-gradient">VideoPlayer</span> Component
       </h1>
       <p class="page-header__subtitle">
-        A Vue 3 composable wrapping the Video.js 10 <code>@videojs/html</code> beta,
+        A Vue 3 composable wrapping the Video.js 10 <code>@videojs/html</code>,
         bridging its reactive Media Store into Vue's reactivity system.
         Big Buck Bunny powered. Dark. Premium.
       </p>
@@ -190,7 +190,26 @@
     </ShowcaseSection>
 
     <!-- ═══════════════════════════════════════════════
-         5. API REFERENCE
+         5. CUEPOINTS
+    ═══════════════════════════════════════════════ -->
+    <ShowcaseSection
+      id="cuepoints"
+      title="Cuepoints"
+      description="Pass a list of { time, title } objects and the cuepoints are generated for you via the reusable useCuepoints API (backed by a native hidden TextTrack, since Video.js 10 has no cuepoint support yet). Markers are overlaid on the player's own seekbar. Hover to see titles, click to seek."
+      badge="New"
+    >
+      <CuepointsDemo />
+
+      <h4 class="api-table-heading" style="margin-top: var(--space-8)">How to set cuepoints</h4>
+      <p class="api-section__description" style="margin-bottom: var(--space-3)">
+        Provide plain objects with a <code>time</code> (seconds) and a <code>title</code> — the cuepoints
+        and timeline markers are generated for you. There are no ids to manage.
+      </p>
+      <CodeBlock :code="CODE_CUEPOINTS" lang="vue" />
+    </ShowcaseSection>
+
+    <!-- ═══════════════════════════════════════════════
+         6. API REFERENCE
     ═══════════════════════════════════════════════ -->
     <ShowcaseSection
       id="api"
@@ -285,6 +304,7 @@
               <tr><td><code>muted</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Start muted.</td></tr>
               <tr><td><code>loop</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Loop.</td></tr>
               <tr><td><code>variant</code></td><td><code>'default' | 'minimal' | 'custom'</code></td><td><code>'default'</code></td><td>Visual style variant.</td></tr>
+              <tr><td><code>cuepoints</code></td><td><code>CuepointInput[]</code></td><td><code>[]</code></td><td>List of <code>{ time, title }</code> objects to register on the timeline. Reactive.</td></tr>
             </tbody>
           </table>
         </div>
@@ -299,6 +319,8 @@
               <tr><td><code>pause</code></td><td>—</td><td>Playback paused.</td></tr>
               <tr><td><code>ended</code></td><td>—</td><td>Playback ended.</td></tr>
               <tr><td><code>timeupdate</code></td><td><code>number</code></td><td>Current time in seconds.</td></tr>
+              <tr><td><code>cuepoint-enter</code></td><td><code>Cuepoint</code></td><td>Playhead entered a cuepoint (playback or seek).</td></tr>
+              <tr><td><code>cuepoint-exit</code></td><td><code>Cuepoint</code></td><td>Playhead left a cuepoint.</td></tr>
             </tbody>
           </table>
         </div>
@@ -308,6 +330,66 @@
           All reactive state and control methods are accessible via template ref:
         </p>
         <CodeBlock :code="CODE_TEMPLATE_REF" lang="vue" />
+      </div>
+
+      <!-- useCuepoints -->
+      <div class="api-section">
+        <h3 class="api-section__title">
+          <code>useCuepoints(videoRef, options)</code>
+        </h3>
+        <p class="api-section__description">
+          Standalone cuepoint API for any <code>&lt;video&gt;</code> element. Video.js 10 has no cuepoint
+          support yet, so cuepoints are backed by a hidden native <code>TextTrack</code> (<code>kind: 'metadata'</code>).
+          <code>&lt;VideoPlayer&gt;</code> uses it internally and exposes the same methods on its template ref.
+        </p>
+
+        <h4 class="api-table-heading">Cuepoint (input)</h4>
+        <div class="api-table-wrap">
+          <table class="api-table">
+            <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>time</code></td><td><code>number</code></td><td><strong>Required.</strong> Start time in seconds.</td></tr>
+              <tr><td><code>title</code></td><td><code>string</code></td><td><strong>Required.</strong> Human readable title (marker tooltip, cue text).</td></tr>
+              <tr><td><code>endTime</code></td><td><code>number?</code></td><td>End time. Defaults to <code>time + defaultDuration</code>.</td></tr>
+              <tr><td><code>data</code></td><td><code>T?</code></td><td>Arbitrary payload passed back in callbacks.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4 class="api-table-heading">Options</h4>
+        <div class="api-table-wrap">
+          <table class="api-table">
+            <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>cuepoints</code></td><td><code>MaybeRefOrGetter&lt;CuepointInput[]&gt;</code></td><td>Declarative list of <code>{ time, title }</code> objects; changes are synced.</td></tr>
+              <tr><td><code>defaultDuration</code></td><td><code>number</code></td><td>Cue length without <code>endTime</code> (default <code>0.5</code>).</td></tr>
+              <tr><td><code>trackLabel</code></td><td><code>string</code></td><td>TextTrack label (default <code>'Cuepoints'</code>).</td></tr>
+              <tr><td><code>onEnter / onExit</code></td><td><code>(cuepoint) =&gt; void</code></td><td>Fired on enter / exit, including via seeking.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4 class="api-table-heading">Returns</h4>
+        <div class="api-table-wrap">
+          <table class="api-table">
+            <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>cuepoints</code></td><td><code>ComputedRef&lt;Cuepoint[]&gt;</code></td><td>All cuepoints sorted by time.</td></tr>
+              <tr><td><code>activeIds</code></td><td><code>Readonly&lt;ShallowRef&lt;string[]&gt;&gt;</code></td><td>Ids the playhead is inside.</td></tr>
+              <tr><td><code>activeCuepoints</code></td><td><code>ComputedRef&lt;Cuepoint[]&gt;</code></td><td>Cuepoints the playhead is inside.</td></tr>
+              <tr><td><code>addCuepoint(cp)</code></td><td><code>(CuepointInput) → Cuepoint</code></td><td>Add a cuepoint (the same time + title replaces it).</td></tr>
+              <tr><td><code>removeCuepoint(cp)</code></td><td><code>(CuepointInput) → boolean</code></td><td>Remove a cuepoint (matched by time + title).</td></tr>
+              <tr><td><code>clearCuepoints()</code></td><td><code>() → void</code></td><td>Remove all cuepoints.</td></tr>
+              <tr><td><code>seekToCuepoint(cp)</code></td><td><code>(CuepointInput) → void</code></td><td>Seek to a cuepoint.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="api-section__description">
+          Render markers with <code>&lt;CuepointMarkers&gt;</code> (props <code>cuepoints</code> — the same <code>{ time, title }</code> list — <code>duration</code>,
+          <code>activeIds</code>; event <code>select</code>) inside the <code>&lt;VideoPlayer&gt;</code> default slot,
+          which also provides <code>duration</code>, <code>cuepoints</code>, <code>activeCuepoints</code>,
+          <code>activeCuepointIds</code> and <code>seekToCuepoint</code>.
+        </p>
       </div>
     </ShowcaseSection>
   </main>
@@ -320,6 +402,7 @@ import ShowcaseSection from './components/ShowcaseSection.vue'
 import StateDisplay from './components/StateDisplay.vue'
 import ControlPanel from './components/ControlPanel.vue'
 import CodeBlock from './components/CodeBlock.vue'
+import CuepointsDemo from './components/CuepointsDemo.vue'
 
 // ── Constants ──────────────────────────────────────────────────────────────
 const BBB_SRC    = 'https://cdn.jsdelivr.net/npm/big-buck-bunny-1080p/video.mp4'
@@ -358,8 +441,9 @@ const navItems: NavItem[] = [
   { id: 'hero',     label: 'Hero Player',           icon: iconPlay() },
   { id: 'default',  label: 'Default Config',         icon: iconSliders() },
   { id: 'autoplay', label: 'Autoplay + Muted',       icon: iconZap() },
-  { id: 'custom',   label: 'Custom Styled',          icon: iconStar() },
-  { id: 'api',      label: 'API Reference',          icon: iconCode() },
+  { id: 'custom',    label: 'Custom Styled',          icon: iconStar() },
+  { id: 'cuepoints', label: 'Cuepoints',             icon: iconCuepoints() },
+  { id: 'api',       label: 'API Reference',         icon: iconCode() },
 ]
 
 function scrollToSection(id: string) {
@@ -390,11 +474,12 @@ onBeforeUnmount(() => {
 })
 
 // ── SVG icon helpers ───────────────────────────────────────────────────────
-function iconPlay()    { return `<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M8 5v14l11-7z"/></svg>` }
-function iconSliders() { return `<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg>` }
-function iconZap()     { return `<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>` }
-function iconStar()    { return `<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>` }
-function iconCode()    { return `<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>` }
+function iconPlay()      { return `<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M8 5v14l11-7z"/></svg>` }
+function iconSliders()   { return `<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg>` }
+function iconZap()       { return `<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>` }
+function iconStar()      { return `<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>` }
+function iconCuepoints() { return `<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>` }
+function iconCode()      { return `<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>` }
 
 // ── Code examples ──────────────────────────────────────────────────────────
 const CODE_DEFAULT = `<template>
@@ -452,6 +537,34 @@ import { ref } from 'vue'
 import VideoPlayer from './components/VideoPlayer.vue'
 
 const player = ref(null)
+<\/script>`
+const CODE_CUEPOINTS = `<template>
+  <VideoPlayer
+    src="video.mp4"
+    :cuepoints="cuepoints"
+    @cuepoint-enter="cp => console.log('Entered:', cp.title)"
+    @cuepoint-exit="cp => console.log('Left:', cp.title)"
+  >
+    <!-- Optional: timeline markers (generated from the same list) -->
+    <template #default="{ duration, activeCuepointIds, seekToCuepoint }">
+      <CuepointMarkers
+        :cuepoints="cuepoints"
+        :duration="duration"
+        :active-ids="activeCuepointIds"
+        @select="seekToCuepoint"
+      />
+    </template>
+  </VideoPlayer>
+</template>
+
+<script setup lang="ts">
+import { VideoPlayer, CuepointMarkers, type CuepointInput } from 'videojs10-vue'
+
+// Only time (seconds) and title are required.
+const cuepoints: CuepointInput[] = [
+  { time: 10, title: 'Chase begins' },
+  { time: 22, title: 'Gotcha!' },
+]
 <\/script>`
 </script>
 

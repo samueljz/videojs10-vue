@@ -8,12 +8,14 @@
     ]"
   >
     <video-player ref="player" class="video-player__stage">
-      <video
-        ref="videoEl"
-        class="video-player__video"
-        playsinline
-        :poster="poster"
-      />
+      <media-container class="video-player__surface">
+        <video
+          ref="videoEl"
+          class="video-player__video"
+          playsinline
+          :poster="poster"
+        />
+      </media-container>
     </video-player>
 
     <!-- Loading overlay -->
@@ -48,6 +50,10 @@
       :pause="pause"
       :toggle-play="togglePlay"
       :seek="seek"
+      :cuepoints="cuepoints"
+      :active-cuepoints="activeCuepoints"
+      :active-cuepoint-ids="activeIds"
+      :seek-to-cuepoint="seekToCuepoint"
     />
   </div>
 </template>
@@ -56,6 +62,8 @@
 import { ref, watch, onMounted } from 'vue'
 import type { VideoPlayerElement } from '@videojs/html/video'
 import { useVideoPlayer } from '../composables/useVideoPlayer'
+import { useCuepoints } from '../composables/useCuepoints'
+import type { Cuepoint, CuepointInput } from '../composables/useCuepoints'
 
 // Explicit name to avoid colliding with the `<video-player>` custom element
 // used in this template — Vue's SFC compiler otherwise infers "VideoPlayer"
@@ -71,6 +79,8 @@ export interface Props {
   loop?: boolean;
   options?: Record<string, any>;
   variant?: 'default' | 'minimal' | 'custom';
+  /** Cuepoints to register on the media timeline. */
+  cuepoints?: CuepointInput[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -81,6 +91,7 @@ const props = withDefaults(defineProps<Props>(), {
   loop: false,
   options: () => ({}),
   variant: 'default',
+  cuepoints: () => [],
 })
 
 const emit = defineEmits<{
@@ -90,6 +101,8 @@ const emit = defineEmits<{
   (e: 'ended'): void;
   (e: 'timeupdate', time: number): void;
   (e: 'error'): void;
+  (e: 'cuepoint-enter', cuepoint: Cuepoint): void;
+  (e: 'cuepoint-exit', cuepoint: Cuepoint): void;
 }>()
 
 // ── Template refs ─────────────────────────────────────────────────────────
@@ -126,6 +139,21 @@ const {
   muted:    props.muted,
   loop:     props.loop,
   controls: props.controls,
+})
+
+// ── Cuepoints ─────────────────────────────────────────────────────────────
+const {
+  cuepoints,
+  activeIds,
+  activeCuepoints,
+  addCuepoint,
+  removeCuepoint,
+  clearCuepoints,
+  seekToCuepoint,
+} = useCuepoints(videoEl, {
+  cuepoints: () => props.cuepoints,
+  onEnter: (cp) => emit('cuepoint-enter', cp),
+  onExit:  (cp) => emit('cuepoint-exit', cp),
 })
 
 // ── Watch props → emit events ──────────────────────────────────────────────
@@ -165,6 +193,13 @@ defineExpose({
   toggleFullscreen,
   requestFullscreen,
   exitFullscreen,
+  // Cuepoints
+  cuepoints,
+  activeCuepoints,
+  addCuepoint,
+  removeCuepoint,
+  clearCuepoints,
+  seekToCuepoint,
 })
 </script>
 
@@ -191,6 +226,12 @@ defineExpose({
 }
 
 .video-player__stage {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.video-player__surface {
   display: block;
   width: 100%;
   height: 100%;

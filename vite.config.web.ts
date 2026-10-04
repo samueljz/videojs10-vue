@@ -6,7 +6,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // Video.js v10 custom elements used directly in templates — see
 // https://videojs.org/docs/how-to/use-videojs-with-vue
-const videoJsElements = new Set(['video-player'])
+const videoJsElements = new Set(['video-player', 'media-container'])
 
 // SPA build — no lib mode, no dts generation
 // https://vite.dev/config/

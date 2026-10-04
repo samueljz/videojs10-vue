@@ -8,7 +8,7 @@ import dts from 'vite-plugin-dts'
 
 // Video.js v10 custom elements used directly in templates — see
 // https://videojs.org/docs/how-to/use-videojs-with-vue
-const videoJsElements = new Set(['video-player'])
+const videoJsElements = new Set(['video-player', 'media-container'])
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -51,6 +51,7 @@ export default defineConfig({
           '@videojs/html': 'VideojsHtml',
           '@videojs/html/video': 'VideojsHtml',
           '@videojs/html/video/player': 'VideojsHtml',
+          '@videojs/html/ui/container': 'VideojsHtml',
         },
         assetFileNames: (assetInfo) => {
           if (assetInfo.name === 'style.css') return 'videojs10-vue.css';

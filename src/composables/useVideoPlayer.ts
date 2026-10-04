@@ -3,7 +3,9 @@
  *
  * Architecture:
  * - Reads the store off a <video-player> custom element (registered via the
- *   `@videojs/html/video/player` side-effect import below)
+ *   `@videojs/html/video/player` side-effect import below) and a nested
+ *   <media-container> (`@videojs/html/ui/container`) which provides the layout,
+ *   fullscreen and activity-tracking surface
  * - The element auto-attaches its store to a nested <video> descendant, and
  *   auto-destroys the store when removed from the DOM — no manual attach/detach
  * - Bridges the v10 Media Store into Vue refs via store.subscribe() / DOM events
@@ -16,6 +18,7 @@ import type { Ref } from 'vue'
 import { selectPlayback, selectTime, selectVolume, selectFullscreen } from '@videojs/html'
 import type { VideoPlayerElement } from '@videojs/html/video'
 import '@videojs/html/video/player'
+import '@videojs/html/ui/container'
 
 export interface VideoPlayerOptions {
   src?: string | Ref<string>;
@@ -83,7 +86,7 @@ export function useVideoPlayer(
       isMuted.value = !!vol.muted
     }
     if (fullscreen) {
-      isFullscreen.value = !!fullscreen.fullscreen
+      isFullscreen.value = !!fullscreen.isFullscreen
     }
   }
 
