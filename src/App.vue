@@ -17,7 +17,7 @@
       <div>
         <div class="sidebar-brand__name">VideoPlayer</div>
         <div class="sidebar-brand__version">
-          <span class="badge badge--accent">v10</span>
+          <span class="tag tag--accent">v10</span>
         </div>
       </div>
     </div>
@@ -44,7 +44,7 @@
     <div class="sidebar-footer">
       <div class="sidebar-footer__row">
         <span class="sidebar-footer__label">@videojs/html</span>
-        <span class="badge badge--primary">10.0.1</span>
+        <span class="tag tag--primary">10.0.1</span>
       </div>
       <div class="sidebar-footer__row sidebar-footer__row--muted">Vue 3 + Vite</div>
     </div>
@@ -56,8 +56,8 @@
     ═══════════════════════════════════════════════ -->
     <header class="page-header">
       <div class="page-header__eyebrow">
-        <span class="badge badge--primary">Video.js 10</span>
-        <span class="badge badge--accent">Vue 3</span>
+        <span class="tag tag--primary">Video.js 10</span>
+        <span class="tag tag--accent">Vue 3</span>
       </div>
       <h1 class="page-header__title">
         <span class="text-gradient">VideoPlayer</span> Component
@@ -76,7 +76,6 @@
       id="hero"
       title="Hero Player"
       description="Full-featured player with live reactive state display and external programmatic controls. All state updates driven by the useVideoPlayer() composable."
-      badge="Featured"
     >
       <div class="hero-layout">
         <div class="hero-layout__player">
@@ -196,7 +195,6 @@
       id="cuepoints"
       title="Cuepoints"
       description="Pass a list of { time, title } objects and the cuepoints are generated for you via the reusable useCuepoints API (backed by a native hidden TextTrack, since Video.js 10 has no cuepoint support yet). Markers are overlaid on the player's own seekbar. Hover to see titles, click to seek."
-      badge="New"
     >
       <CuepointsDemo />
 
@@ -490,7 +488,7 @@ const CODE_DEFAULT = `<template>
 </template>
 
 <script setup>
-import VideoPlayer from './components/VideoPlayer.vue'
+import { VideoPlayer } from 'videojs10-vue'
 <\/script>`
 
 const CODE_AUTOPLAY = `<template>
@@ -504,7 +502,7 @@ const CODE_AUTOPLAY = `<template>
 </template>
 
 <script setup>
-import VideoPlayer from './components/VideoPlayer.vue'
+import { VideoPlayer } from 'videojs10-vue'
 <\/script>`
 
 const CODE_CUSTOM = `<template>
@@ -517,7 +515,7 @@ const CODE_CUSTOM = `<template>
 </template>
 
 <script setup>
-import VideoPlayer from './components/VideoPlayer.vue'
+import { VideoPlayer } from 'videojs10-vue'
 <\/script>`
 
 const CODE_TEMPLATE_REF = `<template>
@@ -534,7 +532,7 @@ const CODE_TEMPLATE_REF = `<template>
 
 <script setup>
 import { ref } from 'vue'
-import VideoPlayer from './components/VideoPlayer.vue'
+import { VideoPlayer } from 'videojs10-vue'
 
 const player = ref(null)
 <\/script>`
@@ -542,8 +540,8 @@ const CODE_CUEPOINTS = `<template>
   <VideoPlayer
     src="video.mp4"
     :cuepoints="cuepoints"
-    @cuepoint-enter="cp => console.log('Entered:', cp.title)"
-    @cuepoint-exit="cp => console.log('Left:', cp.title)"
+    @cuepoint-enter="onEnter"
+    @cuepoint-exit="onExit"
   >
     <!-- Optional: timeline markers (generated from the same list) -->
     <template #default="{ duration, activeCuepointIds, seekToCuepoint }">
@@ -558,13 +556,21 @@ const CODE_CUEPOINTS = `<template>
 </template>
 
 <script setup lang="ts">
-import { VideoPlayer, CuepointMarkers, type CuepointInput } from 'videojs10-vue'
+import { VideoPlayer, CuepointMarkers, type CuepointInput, type Cuepoint } from 'videojs10-vue'
 
 // Only time (seconds) and title are required.
 const cuepoints: CuepointInput[] = [
   { time: 10, title: 'Chase begins' },
   { time: 22, title: 'Gotcha!' },
 ]
+
+function onEnter(cp: Cuepoint) {
+  console.log('Entered:', cp.title)
+}
+
+function onExit(cp: Cuepoint) {
+  console.log('Left:', cp.title)
+}
 <\/script>`
 </script>
 

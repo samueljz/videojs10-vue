@@ -50,22 +50,24 @@ const highlighted = computed(() => {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
 
-  // Apply token colors via spans
+  // Apply token colors via placeholders to avoid corrupting our own HTML tags
   code = code
-    // Comments
-    .replace(/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)/g, '<span class="token-comment">$1</span>')
+    // Comments (including escaped HTML comments)
+    .replace(/(\/\/[^\n]*|\/\*[\s\S]*?\*\/|&lt;!--[\s\S]*?--&gt;)/g, '~~comment~~$1~~end~~')
     // Strings
-    .replace(/(&quot;[^&]*?&quot;|&#x27;[^]*?&#x27;|`[^`]*?`)/g, '<span class="token-string">$1</span>')
+    .replace(/("[^"]*?"|'[^']*?'|`[^`]*?`)/g, '~~string~~$1~~end~~')
     // Keywords
-    .replace(/\b(import|export|from|const|let|var|function|return|if|else|async|await|new|class|extends|default|true|false|null|undefined)\b/g, '<span class="token-keyword">$1</span>')
+    .replace(/\b(import|export|from|const|let|var|function|return|if|else|async|await|new|class|extends|default|true|false|null|undefined|type)\b/g, '~~keyword~~$1~~end~~')
     // Vue template tags (escaped)
-    .replace(/(&lt;\/?)([\w-]+)/g, '$1<span class="token-tag">$2</span>')
-    // Props/attributes
-    .replace(/\s([\w-]+)=/g, ' <span class="token-attr">$1</span>=')
+    .replace(/(&lt;\/?)([\w-]+)/g, '$1~~tag~~$2~~end~~')
+    // Props/attributes (include @, :, #)
+    .replace(/\s([@:#A-Za-z0-9_-]+)=/g, ' ~~attr~~$1~~end~~=')
     // Numbers
-    .replace(/\b(\d+\.?\d*)\b/g, '<span class="token-number">$1</span>')
+    .replace(/\b(\d+\.?\d*)\b/g, '~~number~~$1~~end~~')
 
   return code
+    .replace(/~~([a-z]+)~~/g, '<span class="token-$1">')
+    .replace(/~~end~~/g, '</span>')
 })
 </script>
 

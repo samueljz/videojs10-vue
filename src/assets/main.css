@@ -189,7 +189,7 @@ code, pre {
   background-clip: text;
 }
 
-.badge {
+.tag {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
@@ -201,13 +201,13 @@ code, pre {
   text-transform: uppercase;
 }
 
-.badge--primary {
+.tag--primary {
   background: var(--color-primary-muted);
   color: var(--color-primary-light);
   border: 1px solid rgba(99, 102, 241, 0.3);
 }
 
-.badge--accent {
+.tag--accent {
   background: var(--color-accent-glow);
   color: var(--color-accent-light);
   border: 1px solid rgba(6, 182, 212, 0.3);

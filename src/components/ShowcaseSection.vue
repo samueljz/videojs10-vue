@@ -2,7 +2,6 @@
   <section :id="id" class="showcase-section">
     <header class="showcase-section__header">
       <div class="showcase-section__title-row">
-        <span v-if="badge" class="badge badge--primary">{{ badge }}</span>
         <h2 class="showcase-section__title">{{ title }}</h2>
       </div>
       <p v-if="description" class="showcase-section__description">{{ description }}</p>
@@ -21,13 +20,10 @@ export interface Props {
   title: string;
   /** Optional subtitle below heading */
   description?: string;
-  /** Optional badge label (e.g. "Beta", "New") */
-  badge?: string;
 }
 
 withDefaults(defineProps<Props>(), {
   description: '',
-  badge: '',
 })
 </script>
 

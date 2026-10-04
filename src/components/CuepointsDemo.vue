@@ -35,7 +35,7 @@
     <div class="cue-list">
       <div class="cue-list__header">
         <span class="cue-list__title">Cuepoints</span>
-        <span class="badge badge--accent">{{ items.length }}</span>
+        <span class="tag tag--accent">{{ items.length }}</span>
       </div>
       <div class="cue-list__items">
         <div
@@ -51,7 +51,7 @@
             <span class="cue-item__label">{{ cp.title }}</span>
             <span class="cue-item__time">{{ formatTime(cp.time) }}</span>
           </div>
-          <span v-if="activeIds.includes(cp.id)" class="badge badge--primary">Active</span>
+          <span v-if="activeIds.includes(cp.id)" class="tag tag--primary">Active</span>
         </div>
       </div>
     </div>
