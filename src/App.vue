@@ -383,10 +383,9 @@
           </table>
         </div>
         <p class="api-section__description">
-          Render markers with <code>&lt;CuepointMarkers&gt;</code> (props <code>cuepoints</code> — the same <code>{ time, title }</code> list — <code>duration</code>,
-          <code>activeIds</code>; event <code>select</code>) inside the <code>&lt;VideoPlayer&gt;</code> default slot,
-          which also provides <code>duration</code>, <code>cuepoints</code>, <code>activeCuepoints</code>,
-          <code>activeCuepointIds</code> and <code>seekToCuepoint</code>.
+          The <code>&lt;VideoPlayer&gt;</code> automatically renders markers for you when you pass the <code>cuepoints</code> prop. 
+          If you want to customize them, you can place a <code>&lt;CuepointMarkers&gt;</code> overlay inside the <code>&lt;VideoPlayer&gt;</code> 
+          default slot. It uses Vue's Provide/Inject to magically hook up to the player's state.
         </p>
       </div>
     </ShowcaseSection>
@@ -542,21 +541,11 @@ const CODE_CUEPOINTS = `<template>
     :cuepoints="cuepoints"
     @cuepoint-enter="onEnter"
     @cuepoint-exit="onExit"
-  >
-    <!-- Optional: timeline markers (generated from the same list) -->
-    <template #default="{ duration, activeCuepointIds, seekToCuepoint }">
-      <CuepointMarkers
-        :cuepoints="cuepoints"
-        :duration="duration"
-        :active-ids="activeCuepointIds"
-        @select="seekToCuepoint"
-      />
-    </template>
-  </VideoPlayer>
+  />
 </template>
 
 <script setup lang="ts">
-import { VideoPlayer, CuepointMarkers, type CuepointInput, type Cuepoint } from 'videojs10-vue'
+import { VideoPlayer, type CuepointInput, type Cuepoint } from 'videojs10-vue'
 
 // Only time (seconds) and title are required.
 const cuepoints: CuepointInput[] = [

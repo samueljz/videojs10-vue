@@ -120,21 +120,11 @@ Pass the list to the `cuepoints` prop. It is reactive: add, remove or edit entri
     :cuepoints="cuepoints"
     @cuepoint-enter="cp => console.log('Entered:', cp.title)"
     @cuepoint-exit="cp => console.log('Left:', cp.title)"
-  >
-    <!-- Optional: timeline markers generated from the same list -->
-    <template #default="{ duration, activeCuepointIds, seekToCuepoint }">
-      <CuepointMarkers
-        :cuepoints="cuepoints"
-        :duration="duration"
-        :active-ids="activeCuepointIds"
-        @select="seekToCuepoint"
-      />
-    </template>
-  </VideoPlayer>
+  />
 </template>
 
 <script setup lang="ts">
-import { VideoPlayer, CuepointMarkers, type CuepointInput } from 'videojs10-vue'
+import { VideoPlayer, type CuepointInput } from 'videojs10-vue'
 
 const cuepoints: CuepointInput[] = [
   { time: 10, title: 'Chase begins' },
@@ -143,7 +133,21 @@ const cuepoints: CuepointInput[] = [
 </script>
 ```
 
-To also show cuepoints added at runtime as markers, pass the slot's `cuepoints` (all current cuepoints) to `<CuepointMarkers>` instead of your own list.
+When you pass the `cuepoints` prop to `<VideoPlayer>`, it automatically renders the timeline markers for you. 
+
+**Customizing Markers**
+
+If you want to customize the look of the markers (e.g., using a custom icon instead of a dot), you can drop a `<CuepointMarkers>` overlay directly into the player's default slot. It will automatically inject all the state it needs from the player:
+
+```vue
+<VideoPlayer src="video.mp4" :cuepoints="cuepoints">
+  <CuepointMarkers>
+    <template #marker="{ cuepoint, active }">
+      <MyCustomStarIcon :filled="active" /> {{ cuepoint.title }}
+    </template>
+  </CuepointMarkers>
+</VideoPlayer>
+```
 
 Events receive the cuepoint (`{ time, title, endTime?, data? }`). Skipping over a cuepoint by seeking also fires `cuepoint-enter` / `cuepoint-exit`.
 

@@ -9,16 +9,7 @@
         :controls="true"
         :cuepoints="cuepoints"
         @cuepoint-enter="onCuepointEnter"
-      >
-        <template #default="{ duration, activeCuepointIds, seekToCuepoint }">
-          <CuepointMarkers
-            :cuepoints="cuepoints"
-            :duration="duration"
-            :active-ids="activeCuepointIds"
-            @select="seekToCuepoint"
-          />
-        </template>
-      </VideoPlayer>
+      />
 
       <!-- Active cue toast -->
       <transition name="cue-toast">
@@ -61,7 +52,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue'
 import VideoPlayer from './VideoPlayer.vue'
-import CuepointMarkers from './CuepointMarkers.vue'
 import { normalizeCuepoints } from '../composables/useCuepoints'
 import type { Cuepoint, CuepointInput } from '../composables/useCuepoints'
 

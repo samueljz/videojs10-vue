@@ -1,17 +1,17 @@
 <template>
-  <div v-show="duration > 0" class="cuepoint-markers" aria-hidden="true">
+  <div v-show="playerDuration > 0" class="cuepoint-markers" aria-hidden="true">
     <button
       v-for="cp in resolved"
       :key="cp.id"
       type="button"
       class="cuepoint-marker"
-      :class="{ 'cuepoint-marker--active': activeIds.includes(cp.id) }"
+      :class="{ 'cuepoint-marker--active': highlightedIds.includes(cp.id) }"
       :style="{ left: `${position(cp)}%` }"
       :title="`${cp.title} — ${formatTime(cp.time)}`"
       tabindex="-1"
-      @click.stop="emit('select', cp)"
+      @click.stop="handleSelect(cp)"
     >
-      <slot name="marker" :cuepoint="cp" :active="activeIds.includes(cp.id)">
+      <slot name="marker" :cuepoint="cp" :active="highlightedIds.includes(cp.id)">
         <span class="cuepoint-marker__pip" />
         <span class="cuepoint-marker__label">{{ cp.title }}</span>
       </slot>
@@ -23,6 +23,7 @@
 import { computed } from 'vue'
 import { normalizeCuepoints } from '../composables/useCuepoints'
 import type { Cuepoint, CuepointInput } from '../composables/useCuepoints'
+import { useVideoPlayerContext } from '../composables/useVideoPlayerContext'
 
 /**
  * Renders clickable cuepoint markers positioned along a timeline.
@@ -33,23 +34,39 @@ import type { Cuepoint, CuepointInput } from '../composables/useCuepoints'
  */
 const props = withDefaults(defineProps<{
   /** Plain `{ time, title }` objects (ids are generated, same as the player). */
-  cuepoints: readonly CuepointInput<T>[]
+  cuepoints?: readonly CuepointInput<T>[]
   /** Media duration in seconds; markers are hidden until it is known. */
-  duration: number
+  duration?: number
   activeIds?: readonly string[]
 }>(), {
+  cuepoints: () => [],
+  duration: 0,
   activeIds: () => [],
 })
 
-const resolved = computed(() => normalizeCuepoints(props.cuepoints))
+const context = useVideoPlayerContext()
+
+const inputCuepoints = computed(() => (props.cuepoints.length ? props.cuepoints : (context?.cuepoints.value ?? [])) as readonly CuepointInput<T>[])
+const playerDuration = computed(() => props.duration || (context?.duration.value ?? 0))
+const highlightedIds = computed(() => props.activeIds.length ? props.activeIds : (context?.activeIds.value ?? []))
+
+const resolved = computed(() => normalizeCuepoints(inputCuepoints.value))
 
 const emit = defineEmits<{
   (e: 'select', cuepoint: Cuepoint<T>): void
 }>()
 
+function handleSelect(cp: Cuepoint<T>) {
+  if (context?.seekToCuepoint) {
+    context.seekToCuepoint(cp)
+  }
+  emit('select', cp)
+}
+
 function position(cp: Cuepoint<T>): number {
-  if (!props.duration) return 0
-  return Math.min(100, Math.max(0, (cp.time / props.duration) * 100))
+  const d = playerDuration.value
+  if (!d) return 0
+  return Math.min(100, Math.max(0, (cp.time / d) * 100))
 }
 
 function formatTime(s: number): string {

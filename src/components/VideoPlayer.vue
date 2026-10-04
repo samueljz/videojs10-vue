@@ -37,6 +37,9 @@
       </div>
     </transition>
 
+    <!-- Auto-rendered cuepoint markers -->
+    <CuepointMarkers v-if="cuepoints && cuepoints.length > 0" />
+
     <!-- Slot for custom overlays -->
     <slot
       :is-ready="isReady"
@@ -59,11 +62,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, provide, computed } from 'vue'
 import type { VideoPlayerElement } from '@videojs/html/video'
 import { useVideoPlayer } from '../composables/useVideoPlayer'
 import { useCuepoints } from '../composables/useCuepoints'
 import type { Cuepoint, CuepointInput } from '../composables/useCuepoints'
+import { VideoPlayerKey } from '../composables/useVideoPlayerContext'
+import CuepointMarkers from './CuepointMarkers.vue'
 
 // Explicit name to avoid colliding with the `<video-player>` custom element
 // used in this template — Vue's SFC compiler otherwise infers "VideoPlayer"
@@ -168,6 +173,14 @@ function replayVideo() {
   seek(0)
   play()
 }
+
+// ── Provide Context for Overlays ───────────────────────────────────────────
+provide(VideoPlayerKey, {
+  duration,
+  activeIds,
+  cuepoints: computed(() => props.cuepoints),
+  seekToCuepoint,
+})
 
 // ── Expose to parent via template ref ─────────────────────────────────────
 defineExpose({
